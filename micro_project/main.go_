@@ -1,0 +1,191 @@
+package main
+
+import (
+	"database/sql"
+	"fmt"
+	"log"
+	"net/http"
+	"project/API/customer"
+	"project/handler"
+	"project/schemas"
+	"time"
+
+	"github.com/go-chi/chi"
+	"github.com/go-chi/cors"
+	"github.com/go-sql-driver/mysql"
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/labstack/echo/v4"
+)
+
+var db *sql.DB
+var err error
+
+func connectdb() {
+	// fmt.Println("Start connect DB")
+	// db, err := sql.Open("mysql", "root:smToey140239@tcp(127.0.0.1:3306)/mobiledb_sit")
+	// if err != nil {
+	// 	log.Fatal("Error when connect DB => ", err)
+	// }
+
+	// err = db.Ping()
+	// if err != nil {
+	// 	log.Fatal("Error when ping DB => ", err)
+	// }
+	// fmt.Println("Start connect DB Success")
+	// Capture connection properties.
+	cfg := mysql.Config{
+		User:   "root",
+		Passwd: "smToey140239",
+		Net:    "tcp",
+		Addr:   "127.0.0.1:3306",
+		DBName: "mobiledb_sit",
+	}
+	// Get a database handle.
+	var err error
+	db, err = sql.Open("mysql", cfg.FormatDSN())
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	pingErr := db.Ping()
+	if pingErr != nil {
+		log.Fatal(pingErr)
+	}
+	fmt.Println("Connected!")
+}
+
+func main() {
+	db, err := schemas.Connectdb()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+	// godotenv.Load()
+	portString := "8080"
+
+	// if portString == "" {
+	// 	log.Fatal("PORT is not found the enviroment")
+	// }
+
+	router := chi.NewRouter()
+
+	router.Use(cors.Handler(cors.Options{
+		AllowedOrigins:   []string{"https://*", "https://*"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"*"},
+		ExposedHeaders:   []string{"Link"},
+		AllowCredentials: false,
+		MaxAge:           300,
+	}))
+
+	sRounting := chi.NewRouter()
+
+	sRounting.Get("/healthz", handler.HandleReadiness)
+	sRounting.Get("/err", handler.HandleErr)
+	sRounting.Get("/getAll", customer.GetAllCustomer)
+	sRounting.Post("/register", customer.Register)
+
+	cfg := mysql.Config{
+		User:    "root",
+		Passwd:  "smToey140239",
+		Net:     "tcp",
+		Addr:    "127.0.0.1",
+		DBName:  "mobiledb_sit",
+		Timeout: 30 * time.Second,
+	}
+	cfgCopy := cfg
+	cfgCopy.Addr = fmt.Sprintf("%s:%d", cfg.Addr, 3306)
+
+	router.Mount("/", sRounting)
+
+	srv := &http.Server{
+		Handler: router,
+		Addr:    ":" + portString,
+	}
+
+	fmt.Printf("Server starting on port %v\n", portString)
+	err = srv.ListenAndServe()
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// db_con, err := schemas.Connectdb()
+	// if err != nil {
+	// 	log.Fatal("error create DB", err)
+	// }
+	// fmt.Println(db_con)
+
+	// createTb := `
+	// CREATE TABLE IF NOT EXISTS goimdb (
+	// id INT AUTO_INCREMENT,
+	// imdbID TEXT NOT NULL,
+	// title TEXT NOT NULL,
+	// year INT NOT NULL,
+	// rating FLOAT NOT NULL,
+	// isSuperHero BOOLEAN NOT NULL,
+	// PRIMARY KEY (id)
+	// );`
+
+	// _, err = db.Exec(createTb)
+	// if err != nil {
+	// 	log.Fatal("error create DB", err)
+	// 	return
+	// }
+	// flag.Parse()
+	// e := echo.New()
+	// e.Use(middleware.Logger())
+	// port := "2566"
+
+	// if err := e.Start(":2566"); err != http.ErrServerClosed {
+	// 	log.Fatal(err)
+	// }
+
+	// e.GET("user", customer.ListAllCustomer)
+
+	// cfg := mysql.Config{
+	// 	User:    "root",
+	// 	Passwd:  "smToey140239",
+	// 	Net:     "tcp",
+	// 	Addr:    "127.0.0.1",
+	// 	DBName:  "mobiledb_sit",
+	// 	Timeout: 30 * time.Second,
+	// }
+	// cfgCopy := cfg
+	// cfgCopy.Addr = fmt.Sprintf("%s:%d", cfg.Addr, 3306)
+
+	// db_con, err := schemas.Connectdb(&cfgCopy)
+	// if err != nil {
+	// 	log.Fatal("error create DB", err)
+	// }
+	// fmt.Println(db_con)
+
+	// customer.Serve(db)
+	// customer.Serve(db)
+	// e.GET("create", customer.CreateTable)
+
+	// e.GET("user", ListAllCustomer)
+
+	// log.Println("Strating.. port : ", port)
+	// err = e.Start(":" + port)
+	// log.Fatal(err)
+	// fmt.Println(e)
+	// ListAllCustomer()
+
+}
+
+func ListAllCustomer(e echo.Context) error {
+	items := []string{}
+	rows, _ := db.Query(`SELECT id,create_date,modify_date FROM t_user_template limit 5`)
+	for rows.Next() {
+		var variable1, variable2, variable3 string
+		err := rows.Scan(&variable1, &variable2, &variable3)
+		if err != nil {
+			log.Fatal(err)
+		}
+		items = append(items, variable1)
+		fmt.Println(len(items))
+	}
+
+	return e.JSON(http.StatusOK, items)
+}

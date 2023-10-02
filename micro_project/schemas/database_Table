@@ -1,0 +1,102 @@
+CREATE TABLE
+    shopping_cart (
+        id CHAR(64) NOT NULL,
+        user_id VARCHAR(100),
+        product_id VARCHAR(100),
+        product_title VARCHAR(255),
+        Product_price DOUBLE(10, 2),
+        total_amount DOUBLE(10, 2),
+        quantity_product INT(10),
+        payment_type VARCHAR(100),
+        order_id VARCHAR(100),
+        image_url VARCHAR(255),
+        create_date datetime NOT NULL,
+        modify_date datetime NOT NULL,
+        PRIMARY KEY (id)
+    );
+
+CREATE TABLE
+    payment (
+        id CHAR(64) NOT NULL,
+        order_id VARCHAR(100),
+        account VARCHAR(100),
+        source VARCHAR(255),
+        distination VARCHAR(20),
+        total VARCHAR(20),
+        create_date datetime NOT NULL,
+        modify_date datetime NOT NULL,
+        PRIMARY KEY (id)
+    );
+
+CREATE TABLE
+    main_cart (
+        id CHAR(64) NOT NULL,
+        user_id VARCHAR(100),
+        order_id VARCHAR(100),
+        total_amount VARCHAR(20),
+        payment_type VARCHAR(100),
+        create_date datetime NOT NULL,
+        modify_date datetime NOT NULL,
+        PRIMARY KEY (id)
+    );
+
+CREATE TABLE
+    stadium (
+        id CHAR(64) NOT NULL,
+        brand_id VARCHAR(100),
+        type_stadium VARCHAR(2),
+        stadium_number VARCHAR(2),
+        status VARCHAR(2),
+        image_url VARCHAR(100),
+        promotion VARCHAR(100),
+        price DOUBLE(10, 2),
+        create_date datetime NOT NULL,
+        modify_date datetime NOT NULL,
+        PRIMARY KEY (id)
+    );
+
+CREATE TABLE
+    brand (
+        id CHAR(64) NOT NULL,
+        brand_title VARCHAR(255),
+        image_url VARCHAR(255),
+        time_open VARCHAR(50),
+        time_close VARCHAR(50),
+        location TEXT,
+        tell VARCHAR(100),
+        address VARCHAR(255),
+        create_date datetime NOT NULL,
+        modify_date datetime NOT NULL,
+        PRIMARY KEY (id)
+    );
+
+CREATE TABLE
+    booking (
+        id CHAR(64) NOT NULL,
+        user_id VARCHAR(100),
+        brand_id VARCHAR(255),
+        stadium_id VARCHAR(100),
+        reservation_hours VARCHAR(10),
+        reservation_date VARCHAR(100),
+        start_time VARCHAR(50),
+        end_time VARCHAR(50),
+        create_date datetime NOT NULL,
+        modify_date datetime NOT NULL,
+        del VARCHAR(1),
+        status_payment VARCHAR(1) PRIMARY KEY (id)
+    );
+
+CREATE TABLE
+    stadium_payment (
+        id CHAR(64) NOT NULL,
+        user_id VARCHAR(100),
+        booking_id VARCHAR(100),
+        status VARCHAR(10),
+        image_url VARCHAR(100),
+        total DOUBLE(10, 2),
+        create_date datetime NOT NULL,
+        modify_date datetime NOT NULL,
+        source VARCHAR(100),
+        destination VARCHAR(100),
+        PRIMARY KEY (id)
+    );
